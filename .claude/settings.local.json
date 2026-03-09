@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__aws-documentation-mcp-server__search_documentation",
+      "mcp__aws-documentation-mcp-server__read_documentation",
+      "WebSearch"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "awslabs.aws-documentation-mcp-server"
+  ],
+  "enabledPlugins": {
+    "firebase@claude-plugins-official": false
+  }
+}
