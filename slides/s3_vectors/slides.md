@@ -1,5 +1,5 @@
 ---
-theme: default
+theme: dracula
 title: S3 Vectorsの"じゃない"使い方
 info: |
   S3 VectorsのRAG以外の活用方法を紹介するライトニングトーク
@@ -10,60 +10,69 @@ transition: slide-left
 
 # S3 Vectorsの"じゃない"使い方
 
-RAGだけじゃもったいない！S3 Vectorsの新しい活用法
+2026/3/11  
+JAWS-UG 茨城 #12 春の推しAWSサービスLTまつり！  
+raiha / @raiha_tec
 
 ---
+layout: two-cols
+---
 
-# 目次
+# aws sts get-caller-identity
 
-1. S3 Vectorsとは
-2. ベクトルストア比較
-3. S3 Vectorsの仕組み
-4. メタデータとフィルタリング
-5. よくある使い方：RAG
-6. "じゃない"使い方① グラフネットワーク可視化
-7. "じゃない"使い方② タグの自動生成
-8. コスト
-9. まとめ
+- **仕事**
+    - セキュリティ
+    - SOCやログ分析基盤を作ってます
+- **趣味**
+    - (最近やってないけど)自作スピーカー / 自作キーボード
+    - AIエージェントを使ったWebアプリの個人開発
+- **好きなAWSサービス**
+  <div class="flex gap-4 mt-2 ml-4">
+    <div class="flex flex-col items-center">
+      <img src="/images/ecs.svg" class="w-12 h-12" />
+      <span class="text-sm mt-1">ECS</span>
+    </div>
+    <div class="flex flex-col items-center">
+      <img src="/images/cdk.svg" class="w-12 h-12" />
+      <span class="text-sm mt-1">CDK</span>
+    </div>
+  </div>
 
+::right::
+
+<div class="flex flex-col items-center justify-center h-full">
+  <img src="/images/icon.jpg" class="w-64 rounded-lg" />
+  <p class="mt-4">𝕏: @raiha_tec</p>
+</div>
+
+---
+layout: two-cols
 ---
 
 # S3 Vectorsとは
 
-AWS初の**ベクトルネイティブなオブジェクトストレージ**
+**AWSのフルマネージドなベクトルストア**
 
 - 2025年7月プレビュー → 2025年12月GA
 - ベクトルデータの保存・クエリに特化した専用API
 - サーバーレス：インフラのプロビジョニング不要
-- S3と同等の耐久性（イレブンナイン）・可用性
-- サブ秒のクエリレスポンス（頻繁なクエリは100ms以下）
+- S3と同等の耐久性（11 9）・可用性(SLA99.9%)
+- 1秒未満のクエリレスポンス
 - 最大**20億ベクトル/インデックス**、最大**4,096次元**
 
----
+::right::
 
-# AWSのベクトルストア比較
-
-| | S3 Vectors | OpenSearch Serverless | Aurora pgvector |
-|---|---|---|---|
-| **アーキテクチャ** | サーバーレス | サーバーレス | マネージドDB |
-| **最低コスト** | **従量課金のみ** | ~$700/月（2 OCU） | インスタンス費用 |
-| **レイテンシ** | サブ秒〜100ms | ミリ秒 | ミリ秒 |
-| **ハイブリッド検索** | ❌ ベクトルのみ | ⭕ 全文検索+ベクトル | ⭕ SQL+ベクトル |
-| **メタデータフィルタ** | ⭕ | ⭕ | ⭕（SQLで実現） |
-| **最大ベクトル数** | 20億/インデックス | 制限なし（スケール依存） | ストレージ依存 |
-| **運用負荷** | なし | 低い | 中程度 |
-
-**S3 Vectorsが向いているケース**: 低コスト・大規模・バッチ処理・シンプルなベクトル検索
-
-**OpenSearch/Auroraが向いているケース**: 低レイテンシ・全文検索併用・複雑なクエリ
+<div class="flex items-center justify-center h-full">
+  <img src="/images/s3-vectors.svg" class="w-64 h-64" />
+</div>
 
 ---
+layout: two-cols
+---
 
-# S3 Vectorsの仕組み
+# S3 Vectorsの構成
 
-3つの主要コンポーネント
-
-```mermaid {scale: 0.9}
+```mermaid {scale: 0.65}
 graph TD
     VB[(🪣 Vector Bucket<br/>ベクトル専用バケット)]:::s3 --> VI1{{🗂️ Vector Index<br/>インデックスA}}:::index
     VB --> VI2{{🗂️ Vector Index<br/>インデックスB}}:::index
@@ -76,9 +85,27 @@ graph TD
     classDef vector fill:#527FFF,stroke:#3B5FCC,color:#fff,stroke-width:2px
 ```
 
+::right::
+
+<div class="pl-4 pt-12">
+
+### 3つの主要コンポーネント
+
 - **Vector Bucket** - ベクトル専用の新しいバケットタイプ
 - **Vector Index** - ベクトルデータを整理・類似度検索する単位
 - **Vector** - 埋め込みベクトル＋メタデータ（タグ、カテゴリ等）
+
+</div>
+
+<div class="absolute bottom-8 left-12 right-12 text-sm opacity-80 flex items-center gap-4">
+<Youtube id="soa2HY6_X3o"/>
+<div>
+
+ [AI Agent Ready なベクトルストアの最新事情 - S3 Vectors と OpenSearch の使いどころ](https://youtu.be/soa2HY6_X3o?si=HPkKRSqZyFTXEwto)  
+ 👈オススメです（ギリギリGA前の動画です）
+
+</div>
+</div>
 
 ---
 
@@ -86,13 +113,25 @@ graph TD
 
 ベクトルに付与できる2種類のメタデータ
 
-| | Filterable（デフォルト） | Non-filterable |
+| | Filterable | Non-filterable |
 |---|---|---|
 | クエリ時のフィルタリング | ⭕ 可能 | ❌ 不可 |
-| サイズ上限/ベクトル | **2 KB** | 合計 **40 KB**（filterable含む） |
-| 用途 | カテゴリ、日付、ステータス等 | 原文テキスト、詳細説明等 |
-| 設定タイミング | 自動（デフォルト） | インデックス作成時に指定 |
-| 対応型 | string, number, boolean, list | 任意 |
+| サイズ上限 | **2 KB** | **40 KB**(Filterableとの合計) |
+| 用途 | カテゴリ、日付等 | 原文テキスト等 |
+
+<div class="flex justify-center">    
+```mermaid {scale: 0.85}
+graph LR
+    Q[🔍 クエリ]:::user -->|類似検索 + フィルタ| S3V[(🪣 S3 Vectors)]:::s3
+    S3V -->|Filterable| F[📋 category: ransomware<br/>severity: 9]:::filter
+    S3V -->|Non-filterable| NF[📄 原文テキスト<br/>そのまま返却]:::nonfil
+
+    classDef user fill:#527FFF,stroke:#3B5FCC,color:#fff,stroke-width:2px
+    classDef s3 fill:#3F8624,stroke:#2E6B1A,color:#fff,stroke-width:2px
+    classDef filter fill:#E07941,stroke:#C4622E,color:#fff,stroke-width:2px
+    classDef nonfil fill:#545B64,stroke:#3B4045,color:#fff,stroke-width:2px
+```
+</div>
 
 ---
 
@@ -100,47 +139,42 @@ graph TD
 
 クエリ時にベクトル検索とフィルタ評価を**同時に実行**
 
+<div class="flex gap-6">
+<div class="flex-1">
+
 ```python
-# 類似度検索 + メタデータフィルタを同時に適用
 result = s3vectors.query_vectors(
     vectorBucketName="security-news",
     indexName="articles",
-    queryVector={"float32": target_embedding},
+    queryVector={"float32": embedding},
     topK=5,
     filter={
         "$and": [
             {"category": {"$eq": "ransomware"}},
             {"severity": {"$gte": 7}},
-            {"date": {"$gte": "2026-01"}}
+            {"date": {"$gte": "2026"}}
         ]
     }
 )
 ```
 
-- フィルタは**後処理ではなく検索と並行**して評価 → 精度の高い結果
+</div>
+<div class="flex-1 text-sm">
+
+| 引数 | 説明 |
+|------|------|
+| `vectorBucketName` | 検索対象のVector Bucket |
+| `indexName` | 検索対象のVector Index |
+| `queryVector` | 検索クエリのベクトル |
+| `topK` | 返却する類似ベクトル数 |
+| `filter` | Filterableメタデータの絞り込み条件 |
+
+
+</div>
+</div>
+
+- フィルタは**後処理ではなく検索と並行**して評価
 - 演算子: `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$and`, `$or`
-
----
-
-# メタデータの活用パターン
-
-Non-filterable メタデータで**原文をそのまま保持**できる
-
-```mermaid {scale: 0.85}
-graph LR
-    Q[🔍 クエリ]:::user -->|類似検索 + フィルタ| S3V[(🪣 S3 Vectors)]:::s3
-    S3V -->|ベクトル + Filterable| F[📋 category: ransomware<br/>severity: 9<br/>date: 2026-03]:::filter
-    S3V -->|Non-filterable| NF[📄 原文テキスト<br/>記事の全文や要約を<br/>そのまま返却]:::nonfil
-
-    classDef user fill:#527FFF,stroke:#3B5FCC,color:#fff,stroke-width:2px
-    classDef s3 fill:#3F8624,stroke:#2E6B1A,color:#fff,stroke-width:2px
-    classDef filter fill:#E07941,stroke:#C4622E,color:#fff,stroke-width:2px
-    classDef nonfil fill:#545B64,stroke:#3B4045,color:#fff,stroke-width:2px
-```
-
-- **Filterable**: 絞り込み条件（カテゴリ、日付、重要度など）
-- **Non-filterable**: クエリ結果と一緒に返したいコンテキスト情報
-  - 別データソースを参照せずに原文を取得できる
 
 ---
 
@@ -164,11 +198,7 @@ graph LR
 
 - **前処理**: ドキュメントをチャンク分割 → Embeddingモデルでベクトル化 → `PutVectors`で保存
 - **ランタイム**: 質問をベクトル化 → `QueryVectors`で類似ドキュメント検索 → LLMにコンテキストとして渡し回答生成
-- Knowledge Bases不要、**S3 VectorsのAPIだけ**でRAGが組める
-
-これが王道の使い方。でも今日は...
-
-## S3 Vectorsの**"じゃない"**使い方を紹介します
+- **S3 VectorsのAPIだけ**で安価なRAGが組める
 
 ---
 
@@ -207,7 +237,7 @@ s3vectors.put_vectors(
     indexName="articles",
     vectors=[{
         "key": "article-001",
-        "data": {"float32": embedding},  # 1024次元
+        "data": {"float32": embedding},
         "metadata": {"title": "ランサムウェア攻撃の最新動向", "date": "2026-03"}
     }]
 )
@@ -224,7 +254,13 @@ result = s3vectors.query_vectors(
 # 3. スコアをエッジの重みとしてグラフを構築
 ```
 
-ベクトルDBなしで **記事間の関連性を可視化** できる！
+グラフDBなしで **記事間の関連性を可視化** できる！
+
+---
+
+# demo
+
+<Youtube id="JiHf-P8qn1M?start=158" class="w-full h-96" />
 
 ---
 
@@ -240,13 +276,14 @@ result = s3vectors.query_vectors(
 | 記事B | `ランサムウエア`, `サイバーアタック` |
 | 記事C | `身代金型ウイルス`, `cyber attack` |
 
-→ 同じ概念なのにタグが統一されない！
+→ 同じ概念なのにタグが統一されない！  
+（タグを事前に決めておく方法もあるかもしれないが、**放置していても**問題なく扱えるようにしたい…）
 
 ---
 
 # タグ統一の仕組み
 
-```mermaid
+```mermaid {scale: 0.75}
 graph LR
     AI[🤖 生成AI]:::bedrock -->|新タグ候補| EMB[🔢 Embedding]:::bedrock
     EMB -->|ベクトル化| Q[(🪣 S3 Vectors<br/>QueryVectors)]:::s3
@@ -259,18 +296,46 @@ graph LR
     classDef newreg fill:#DD344C,stroke:#B22A3D,color:#fff,stroke-width:2px
 ```
 
-1. 生成AIが自由にタグを生成（創造性を活かす）
-2. タグをベクトル化してS3 Vectorsにクエリ
-3. 既存タグと類似度が高い → 既存タグを採用
-4. 類似タグがない → 新しいタグとして登録
+<div class="flex gap-8">
+<div class="flex-1">
 
-**生成AIの柔軟性** × **ベクトル類似度による統一** = ブレないタグ付け
+1. 生成AIが自由にタグを生成
+2. タグをベクトル化してS3 Vectorsにクエリ
+3. 類似度が高い → 既存タグを採用
+4. 類似タグがない → 新タグとして登録
+
+※既存のタグと新規のタグのどっちを使えばいいのかという考慮は必要かも…
+
+</div>
+<div class="flex-1">
+
+```json
+{
+    "level": "INFO",
+    "message": "Tag normalization completed",
+    "timestamp": "2026-03-10T07:31:14.438159Z",
+    "logger": "AIAnalysisHandler",
+    "context": {
+        "article_id": "web_20260310073059_6e8bd3d6",
+        "new_tags": [
+            "Data Sovereignty"
+        ],
+        "matched_tags": {
+            "Cybersecurity": "Cybersecurity",
+            "Funding": "Funding"
+        }
+    }
+}
+```
+
+</div>
+</div>
 
 ---
 
 # コスト：S3 Vectorsは安い
 
-1000万ベクトル（1024次元）の場合の月額コスト例
+1000万ベクトル（1024次元）の場合の月額コスト例（[S3料金ページ 料金の例1](https://aws.amazon.com/jp/s3/pricing/) より）
 
 | 項目 | 単価 | コスト/月 |
 |------|------|----------|
@@ -279,16 +344,41 @@ graph LR
 | クエリ（100万回） | $2.5/百万回 + データ処理 | $5.87 |
 | **合計** | | **$11.38** |
 
-**メリット**: サーバーレスで **月額約$11** は圧倒的に安い
+**メリット**: サーバーレスで **月額約$11** は安い！
 
 **デメリット**: コールドクエリはサブ秒（数百ms〜1秒）
 
-→ リアルタイム検索には不向き。バッチ処理やオフライン分析向き
+---
 
-<!--
-参考: https://aws.amazon.com/s3/pricing/
-OpenSearch Serverlessは最低でも月額数百ドル〜かかるため、S3 Vectorsは圧倒的にコスト効率が良い
--->
+# アプリでのコスト（2週間分）
+※現在アプリで取り込んでいる量が**少ない**。かつ、データを**保持し続ける**必要性はあるので、もっとコストはかかるはず。
+<div class="flex justify-center">
+  <img src="/images/cost.png" class="max-h-96" />
+</div>
+
+---
+layout: two-cols
+---
+
+# 宣伝
+
+今回紹介した内容使ったアプリを **10000 AIdeas Competition** に応募しています！
+
+#### [Threat Lens - AI-Powered Threat Intelligence for IT Teams](https://builder.aws.com/content/39Zwk1hzeRS3kB9phS3GjJOQb1F/aideas-threat-lens-ai-powered-threat-intelligence-for-it-teams)
+
+
+セミファイナル突破の条件が記事の「いいね」の数です！  
+是非お願いします！🙏😭
+
+<div class="flex justify-center mt-4">
+  <img src="/images/qr.png" class="w-35" />
+</div>
+
+::right::
+
+<div class="flex items-center justify-center h-full">
+  <img src="/images/aideas.png" class="max-h-96" />
+</div>
 
 ---
 
