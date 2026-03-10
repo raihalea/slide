@@ -12,7 +12,7 @@ transition: slide-left
 
 2026/3/11  
 JAWS-UG 茨城 #12 春の推しAWSサービスLTまつり！  
-raiha / @raiha_tec
+raiha(Ryo Aihara) / @raiha_tec
 
 ---
 layout: two-cols
@@ -200,61 +200,48 @@ graph LR
 - **ランタイム**: 質問をベクトル化 → `QueryVectors`で類似ドキュメント検索 → LLMにコンテキストとして渡し回答生成
 - **S3 VectorsのAPIだけ**で安価なRAGが組める
 
+<div class="absolute bottom-12 left-12 right-12 text-xl">
+
+これが王道の使い方。今日は **RAGじゃない使い方** を紹介します！
+
+</div>
+
 ---
 
-# "じゃない"使い方① グラフネットワーク可視化
+# "じゃない"使い方① グラフっぽい可視化
 
 S3 Vectorsの**類似度スコア**を関係値として活用する
 
-```mermaid {scale: 0.85}
+<div class="flex justify-center">
+
+```mermaid {scale: 0.75}
 graph LR
     A([📰 記事A<br/>ランサムウェア攻撃]):::node1 ---|<b>0.92</b>| B([📰 記事B<br/>身代金要求の手口]):::node2
     A ---|<b>0.85</b>| C([📰 記事C<br/>マルウェア解析]):::node3
-    B ---|<b>0.78</b>| D([📰 記事D<br/>インシデント対応]):::node4
-    C ---|<b>0.81</b>| D
+    B ---|<b>0.88</b>| D([📰 記事D<br/>インシデント対応]):::node4
+    B ---|<b>0.76</b>| E([📰 記事E<br/>暗号化手法]):::node5
+    C ---|<b>0.81</b>| F([📰 記事F<br/>脆弱性情報]):::node6
+    C ---|<b>0.79</b>| G([📰 記事G<br/>ゼロデイ攻撃]):::node7
 
     classDef node1 fill:#E07941,stroke:#C4622E,color:#fff,stroke-width:2px
     classDef node2 fill:#527FFF,stroke:#3B5FCC,color:#fff,stroke-width:2px
     classDef node3 fill:#DD344C,stroke:#B22A3D,color:#fff,stroke-width:2px
     classDef node4 fill:#3F8624,stroke:#2E6B1A,color:#fff,stroke-width:2px
+    classDef node5 fill:#9468BD,stroke:#7550A0,color:#fff,stroke-width:2px
+    classDef node6 fill:#545B64,stroke:#3B4045,color:#fff,stroke-width:2px
+    classDef node7 fill:#D4A017,stroke:#B8860B,color:#fff,stroke-width:2px
 
     linkStyle 0 stroke:#E07941,stroke-width:4px
     linkStyle 1 stroke:#DD344C,stroke-width:3px
-    linkStyle 2 stroke:#527FFF,stroke-width:2px
-    linkStyle 3 stroke:#3F8624,stroke-width:3px
+    linkStyle 2 stroke:#527FFF,stroke-width:3px
+    linkStyle 3 stroke:#9468BD,stroke-width:2px
+    linkStyle 4 stroke:#545B64,stroke-width:3px
+    linkStyle 5 stroke:#D4A017,stroke-width:2px
 ```
 
-記事をベクトル化 → QueryVectorsで上位3件＋スコア取得 → **類似度をエッジの重みとしてグラフ構築**
+</div>
 
----
-
-# グラフネットワーク可視化の流れ
-
-```python
-# 1. 記事をベクトル化して保存
-s3vectors.put_vectors(
-    vectorBucketName="security-news",
-    indexName="articles",
-    vectors=[{
-        "key": "article-001",
-        "data": {"float32": embedding},
-        "metadata": {"title": "ランサムウェア攻撃の最新動向", "date": "2026-03"}
-    }]
-)
-
-# 2. 類似記事をクエリ（上位3件）
-result = s3vectors.query_vectors(
-    vectorBucketName="security-news",
-    indexName="articles",
-    queryVector={"float32": target_embedding},
-    topK=3
-)
-# → [{"key": "article-042", "score": 0.92}, ...]
-
-# 3. スコアをエッジの重みとしてグラフを構築
-```
-
-グラフDBなしで **記事間の関連性を可視化** できる！
+記事をベクトル化 → QueryVectorsで上位N件＋スコア取得 → **類似度をエッジの重みとしてグラフ構築**
 
 ---
 
@@ -381,14 +368,21 @@ layout: two-cols
 </div>
 
 ---
+layout: two-cols
+---
 
 # まとめ
 
 - **S3 Vectors** = ベクトルネイティブなサーバーレスストレージ
-- RAGだけでなく **類似度スコア** を活用した応用が可能
-  - **グラフネットワーク可視化**: 記事間の関連性をスコアで表現
-  - **タグの自動生成**: 生成AIのブレをベクトル類似度で抑制
-- **月額$11〜** で始められるコスト効率の良さ
+- 安くベクトルストアを使いたいなら有力な選択肢
 - レイテンシが許容できるユースケースに最適
+- RAGだけでなく **類似度スコア** を活用した応用が可能
+  - **グラフっぽい可視化**: 記事間の関連性をスコアで表現
+  - **タグの自動生成**: 生成AIのブレをベクトル類似度で抑制
+- ## 「いいね」頼む🙏😭
 
-## ご清聴ありがとうございました
+::right::
+
+<div class="flex items-center justify-center h-full">
+  <img src="/images/s3-vectors.svg" class="w-64 h-64" />
+</div>
