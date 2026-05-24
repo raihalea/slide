@@ -26,6 +26,9 @@ layout: two-cols
 - **趣味**
     - (最近やってないけど)自作スピーカー / 自作キーボード
     - AIエージェントを使ったWebアプリの個人開発
+- **LT**
+    - たぶん10か月ぶりぐらい
+    - Slidev初利用(PDF出力したら色が失われてる…)
 - **好きなAWSサービス**
   <div class="flex gap-4 mt-2 ml-4">
     <div class="flex flex-col items-center">
@@ -202,7 +205,7 @@ graph LR
 
 <div class="absolute bottom-12 left-12 right-12 text-xl">
 
-これが王道の使い方。今日は **RAGじゃない使い方** を紹介します！
+S3 Vectorsの王道はRAG。今日は **RAGじゃない使い方** を紹介します！
 
 </div>
 
@@ -249,6 +252,8 @@ graph LR
 
 <Youtube id="JiHf-P8qn1M?start=158" class="w-full h-96" />
 
+https://youtu.be/JiHf-P8qn1M
+
 ---
 
 # "じゃない"使い方② タグの自動生成
@@ -293,6 +298,12 @@ graph LR
 
 ※既存のタグと新規のタグのどっちを使えばいいのかという考慮は必要かも…
 
+<div class="absolute bottom-12 left-12 right-12 text-xl">
+
+**動作はしているが、意味があるのかは？検証半ば…**
+
+</div>
+
 </div>
 <div class="flex-1">
 
@@ -331,9 +342,9 @@ graph LR
 | クエリ（100万回） | $2.5/百万回 + データ処理 | $5.87 |
 | **合計** | | **$11.38** |
 
-**メリット**: サーバーレスで **月額約$11** は安い！
+**メリット**: サーバーレス！ 安い！💸
 
-**デメリット**: コールドクエリはサブ秒（数百ms〜1秒）
+**デメリット**: レスポンスは遅い😣
 
 ---
 
@@ -353,12 +364,14 @@ layout: two-cols
 
 #### [Threat Lens - AI-Powered Threat Intelligence for IT Teams](https://builder.aws.com/content/39Zwk1hzeRS3kB9phS3GjJOQb1F/aideas-threat-lens-ai-powered-threat-intelligence-for-it-teams)
 
-
 セミファイナル突破の条件が記事の「いいね」の数です！  
 是非お願いします！🙏😭
 
 <div class="flex justify-center mt-4">
   <img src="/images/qr.png" class="w-35" />
+</div>
+<div class="text-xs">
+https://builder.aws.com/content/39Zwk1hzeRS3kB9phS3GjJOQb1F/aideas-threat-lens-ai-powered-threat-intelligence-for-it-teams
 </div>
 
 ::right::
