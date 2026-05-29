@@ -10,8 +10,8 @@ transition: slide-left
 
 # あなたが知らなそうな<br/>AWS WAFの話
 
-2026/X/X  
-JAWS-UG ○○ #XX  
+2026/5/30  
+JAWS-UG 彩の国埼玉支部 #8 彩の国埼玉支部 1周年   
 raiha(Ryo Aihara) / @raiha_tec
 
 ---
@@ -22,12 +22,14 @@ layout: two-cols
 
 - **仕事**
     - セキュリティ
-    - SOCやログ分析基盤を作ってます
+    - SOC運用やログ分析基盤を作ってます
 - **趣味**
     - (最近やってないけど)自作スピーカー / 自作キーボード
-    - AIエージェントを使ったWebアプリの個人開発
-- **最近**
-    - WAFのチューニングで悲鳴を上げる毎日
+    - AI/ローカルLLMで遊ぶ（自作Aqua Voice/Google MeetでVTuberするChrome拡張）
+- **LT**
+    - 彩の国埼玉支部 2回目(#0、今回)
+    - Slidev ２回目
+    - Security-JAWS CfP落ちの内容を話します
 - **好きなAWSサービス**
   <div class="flex gap-4 mt-2 ml-4">
     <div class="flex flex-col items-center">
@@ -88,7 +90,8 @@ layout: two-cols
 <div class="p-2 bg-orange-900/30 rounded">
 
 ### 📰 電通総研ブログ（前提）
-「初心者を脱出する為に知っておきたかったこと8選」 = **中級者になるための本道**  
+「AWS WAF について最初から知りたかったこと8選」   
+= **初心者:Lv200**と**中級者:Lv300**の間ぐらい？  
 8 KB / マネージドルールのバージョン / etc.
 
 </div>
@@ -96,42 +99,20 @@ layout: two-cols
 <div class="p-2 bg-green-900/30 rounded">
 
 ### 🌳 今日の話（このLT）
-**中級者レベルの内容だが、本道から横にちょっと逸れた茂み**  
-知ってても明日の仕事は変わらない。飲み会のネタ用
+どちらかといえば**中級者**だが、なくても困らない…か？  
+明日からすぐ使える！系の話はないです
 
 </div>
 
 </div>
 
----
-
-# 今日のおしながき
-
-<div class="grid grid-cols-2 gap-4 mt-4 text-sm">
-
-<div>
-
-1. **SizeRestrictions の隙間**  
-  〜本体検査範囲とのズレ、そして書けないルール〜
-2. **boto3 × WAF の LockToken**  
-  〜なぜか update できない、を解く〜
-
-</div>
-
-<div>
-
-3. **`check_capacity` は試算だけじゃない**  
-  〜構文 validation も兼ねる隠し機能〜
-4. **今ブロックされてる IP を覗く**  
-  〜`get_rate_based_statement_managed_keys`〜
-
-</div>
-
+<div class="mt-3 text-xs opacity-70">
+📖 <a href="https://tech.dentsusoken.com/entry/8_things_i_wanted_to_know_about_aws_waf">電通総研ブログ：AWS WAF について最初から知りたかったこと8選</a>
 </div>
 
 ---
 
-# AWS WAF 30秒おさらい
+# AWS WAF おさらい
 
 L7（HTTP）で動くマネージドWAF。CloudFront / ALB / API Gateway 等にアタッチ
 
@@ -156,16 +137,16 @@ graph LR
 
 ---
 
-# 🕳️ ① なぜ 8 KB の壁が危険なのか
-
-例として **Body** だけ取り上げる。仕様・ルール・ギャップの3層で見る
+# ①もはや知られていないことで有名な8KB
+<span class="text-xs opacity-60">※「AWS WAF について最初から知りたかったこと8選」にも記載あり</span>  
+**Body** の例  
 
 <div class="text-xs mt-2 font-mono leading-tight">
 
 ```text
                     0KB     8KB    16KB        ...        50KB
                     │       │      │                         │
-WAF 本体検査(ALB)   ████████ ← ここまでしか見ない (8 KB 固定)
+WAF 本体検査(ALB)   ████████ ← ここまでしか見ない (8 KB まで)
 CRS Block 閾値      ────────┃ > 8,192 B で Block ※Count に下げると無効
 攻撃者の細工         ████████████████████████████████████████
                     └─ padding ─┘└── ' OR 1=1 -- ──────────┘
@@ -184,24 +165,31 @@ CRS Block 閾値      ────────┃ > 8,192 B で Block ※Count �
 
 ### 📏 WAF 仕様上限（Body）
 - **ALB / AppSync：8 KB 固定**（拡張不可）
-- CloudFront / APIGW 等：16 KB → 最大 64 KB へ拡張可
+- CloudFront / APIGW 等：16 KB → 最大 64 KB へ拡張可  
+
+Body部のうち、先頭8~64KBまでをAWS WAFは検査する
 
 </div>
 
 <div class="p-2 bg-red-900/30 rounded">
 
-### ⚠️ CRS とのギャップ
+### ⚠️ CommonRuleSetの誤った理解
 `SizeRestrictions_BODY` は **> 8,192 B で Block**  
-→ これを **Count に下げる**と「巨大Body 許可・中身検査せず」  
-= 攻撃者にとって理想的な状況
+→ 単に大きいリクエストを拒否するルールと考えると…  
+→ **Count にする**と「8KB以降のBody部が検査されない」  
+= 攻撃されやすい・気づきづらい
 
 </div>
 
+</div>
+
+<div class="mt-2 text-xs opacity-70">
+📖 <a href="https://docs.aws.amazon.com/ja_jp/waf/latest/developerguide/waf-oversize-request-components.html">AWS Docs: Oversize request components in AWS WAF</a>
 </div>
 
 ---
 
-# 🕳️ ①続 サイズは書けるが、<br/>**個数は書けない**
+# ①続 サイズは書けるが、**個数は書けない**
 
 <div class="text-center text-sm mt-1 font-mono">
 
@@ -223,10 +211,13 @@ CRS Block 閾値      ────────┃ > 8,192 B で Block ※Count �
 ```yaml
 SizeConstraintStatement:
   FieldToMatch:
-    SingleHeader: { Name: cookie }
+    Body: { OversizeHandling: MATCH }
   ComparisonOperator: GT
-  Size: 5000          # ← バイト数のみ
+  Size: 16384         # ← 16 KB 超を Block
 ```
+
+💡 `SizeConstraintStatement` は **Content-Length ベース**なので<br/>**検査範囲(8KB)を超えるサイズ**でも書ける  
+→ CRS の `SizeRestrictions_BODY`(8KB) より大きい閾値も自由に設定可
 
 </div>
 
@@ -236,11 +227,12 @@ SizeConstraintStatement:
 
 | やりたいこと | 可否 |
 |---|---|
-| Cookie が **201 個以上** | ❌ |
-| Header が **201 個以上** | ❌ |
-| Query パラメータが **N 個以上** | ❌ |
+| Cookie が **201 個以上** で Block | ❌ |
+| Header が **201 個以上** で Block | ❌ |
 
-statement に **「カウント」プリミティブが無い**
+WAF 側に「先頭 200 個まで」の **検査上限** があるのに、<br/>statement に **「個数を数える」プリミティブが無い**
+
+→ 検査上限を超えた死角を、個数で塞げない
 
 </div>
 
@@ -248,13 +240,13 @@ statement に **「カウント」プリミティブが無い**
 
 <div class="mt-2 p-2 bg-red-900/30 rounded text-sm">
 
-🚨 小さな Cookie を 200 個以上詰めれば、201 個目以降に**ペイロードを隠せる**（マネージドにもカスタムにも弾く術なし）
+🚨 小さな Cookie を 200 個以上詰めれば、201 個目以降に**ペイロードを隠せる**
 
 </div>
 
 ---
 
-# 🛠️ ② boto3 で WAF 更新時の **LockToken の罠**
+# 🛠️ ② boto3 で WAF 更新時の **LockToken**
 
 WAF は **楽観ロック**でリソース管理。`LockToken` を握っていないと更新が拒否される
 
@@ -262,7 +254,7 @@ WAF は **楽観ロック**でリソース管理。`LockToken` を握ってい�
 
 <div>
 
-### ❌ ハマるコード
+### ❌ LockTokenなし
 
 ```python
 import boto3
@@ -281,7 +273,7 @@ c.update_web_acl(
 
 <div>
 
-### ✅ 正解：`get` で取って `update` に渡す
+### ✅ `get` で取得 `update` に渡す
 
 ```python
 # 1. get で LockToken を取得
@@ -311,9 +303,9 @@ c.update_web_acl(
 
 ---
 
-# 📐 予習：WCU の世界
+# 📐 WCU: WebACL Capacity Unit
 
-WAF が **ルール / Rule Group / Web ACL** の処理リソースを管理する仕組み
+雑に言うと **ルールの大きさ** 。ルールが複雑だと必要なWCUは大きくなる。
 
 <div class="grid grid-cols-2 gap-4 mt-2 text-xs">
 
@@ -341,17 +333,16 @@ Rule  ─────┬─ タイプ毎に WCU が違う
 
 ### 💡 知らないとハマるポイント
 
-- **immutable なのは Capacity の "数値" だけ**  
+- Rule GropのWCUは**immutable**   
   → 中の **ルール追加 / 削除 / 更新は自由**  
   → ただし合計 WCU は宣言値内に収める必要あり  
-  → 超過するときだけ **Rule Group ごと作り直し**
+  → 超過する場合は **Rule Group ごと作り直し**
 
 - Web ACL に載せた Rule Group のコストは  
   **実 WCU ではなく宣言した Capacity 値**で固定  
-  （余裕を持たせると Web ACL 側で損もある）
+  → 固定されているので、Rule Group内を自由に更新しても、Web ACLにルールを載せられる。
 
-- transformation / JSON body inspection を  
-  足すとルール WCU が **跳ね上がる**
+- transformation / JSON body inspection を足すとルール WCU が **増加**
 
 </div>
 
@@ -364,80 +355,12 @@ Rule  ─────┬─ タイプ毎に WCU が違う
 
 ---
 
-# 📐 WCU の二面性
+# 🛠️ ③ `check_capacity` で **WCUの計算**
 
-<div class="text-sm opacity-90">Rule Group の中では最適化される。でも Web ACL に載せると...</div>
-
-<div class="grid grid-cols-2 gap-4 mt-2 text-xs">
-
-<div>
-
-### 🧮 中の WCU は合計より小さくなり得る
-
-```mermaid {scale: 0.55}
-graph TD
-    R1[ルール 1<br/>Body 検査 + transform X]:::r --> O[transform X<br/>1 回分だけ計上]:::opt
-    R2[ルール 2<br/>Body 検査 + transform X]:::r --> O
-    O --> S[実 WCU<br/>= 合計 − 最適化分]:::sum
-
-    classDef r fill:#527FFF,stroke:#3B5FCC,color:#fff,stroke-width:2px
-    classDef opt fill:#E07941,stroke:#C4622E,color:#fff,stroke-width:2px
-    classDef sum fill:#3F8624,stroke:#2E6B1A,color:#fff,stroke-width:2px
-```
-
-**同じコンポーネントに同じ transformation** を適用するルールが複数 → AWS WAF は処理を共有化  
-→ 変換コストは **1 回分しか計上されない**
-
-</div>
-
-<div>
-
-### 💰 Web ACL では **宣言 Capacity 値で固定**
-
-```text
-作成時に宣言した Capacity:  100 WCU
-中身の実 WCU（最適化後）:    20 WCU
-                            ↓
-Web ACL が消費する WCU: ████████ 100
-                       （宣言値が固定で乗る）
-```
-
-→ 「実 WCU が最適化で減った嬉しさ」は  
-**Web ACL レベルでは現れない**  
-→ 過大宣言は Web ACL の WCU 枠を食い潰す
-
-</div>
-
-</div>
-
-<div class="mt-2 p-2 bg-purple-900/30 rounded text-xs">
-
-🎯 Capacity の見積もりは「足りなくならない範囲で、できるだけ小さく」。<code>check_capacity</code> で実態を測ってから宣言値を決めるのが安全
-
-</div>
-
----
-
-# 🛠️ ③ `check_capacity` は<br/>**試算だけじゃない**
-
-WCU 試算 API …と思いきや、引数のルールを **構文 validation** までしてくれる
+デプロイする前にWCUの試算ができる  
+引数のルールを **構文 validation** という効果も
 
 <div class="grid grid-cols-2 gap-4 mt-2 text-xs">
-
-<div>
-
-### 💡 構文 **validation** も同時に走る
-
-引数の `Rules` をパースするので、不正なルールがあると **`WAFInvalidParameterException`** を返してくる
-
-検出される構文エラー（例）：
-- ネスト不可な statement のネスト
-- `OR Statement` にネスト1個だけ
-- 不正な `FieldToMatch` / パラメータ値
-
-→ **Dry-run** として CI に仕込めば WCU 超過 + 構文ミスを同時検査（IPSet ARN 実在性などは別 API）
-
-</div>
 
 <div>
 
@@ -458,9 +381,260 @@ print(resp['Capacity'])  # → 5 WCU
 
 </div>
 
+<div>
+
+### 💡 構文 **validation** も同時に走る
+
+引数の `Rules` をパースするので、不正なルールがあると **`WAFInvalidParameterException`** を返してくる
+
+検出される構文エラー（例）：
+- ネスト不可な statement のネスト
+- `OR Statement` にネスト1個だけ
+- 不正な `FieldToMatch` / パラメータ値
+
+→ **Dry-run** として CI に仕込めば WCU 超過 + 構文ミスを同時検査（IPSet ARN 実在性などは別 API）
+
 </div>
 
-<div class="mt-1 px-2 py-0.5 bg-purple-900/30 rounded text-xs leading-tight">🔑 マネージドルールは <code>describe_managed_rule_group</code> で個別 WCU を取得 → <code>check_capacity</code> に渡して合算試算もできる</div>
+
+
+</div>
+
+<div class="mt-2 p-2 bg-purple-900/30 rounded text-xs">🔑 マネージドルールは <code>describe_managed_rule_group</code> で個別 WCU を取得 → <code>check_capacity</code> に渡して合算試算もできる
+</div>
+
+---
+
+# 🎲 例題：このルール、何 WCU？
+
+<div class="grid grid-cols-2 gap-3 mt-1 text-xs">
+
+<div>
+
+### rule1 — JP × `.*/test/.*`
+
+```json
+{
+  "Statement": { "AndStatement": { "Statements": [
+    { "GeoMatchStatement": {
+        "CountryCodes": ["JP"] } },
+    { "RegexMatchStatement": {
+        "RegexString": ".*/test/.*",
+        "FieldToMatch": { "Body": {...} },
+        "TextTransformations": [
+          { "Priority": 0, "Type": "URL_DECODE" },
+          { "Priority": 1, "Type": "LOWERCASE" }
+        ] } }
+  ] } }
+}
+```
+
+</div>
+
+<div>
+
+### rule2 — US × `.*/example/.*`
+
+```json
+{
+  "Statement": { "AndStatement": { "Statements": [
+    { "GeoMatchStatement": {
+        "CountryCodes": ["US"] } },
+    { "RegexMatchStatement": {
+        "RegexString": ".*/example/.*",
+        "FieldToMatch": { "Body": {...} },
+        "TextTransformations": [
+          { "Priority": 0, "Type": "URL_DECODE" },
+          { "Priority": 1, "Type": "LOWERCASE" }
+        ] } }
+  ] } }
+}
+```
+
+</div>
+
+</div>
+
+<div class="mt-1 text-center text-lm">
+🤔 <strong>両方を同じ Web ACLに載せた</strong>とき、消費 WCU は何？<br/>
+単純合計と <code>check_capacity</code> の結果は一致する？
+</div>
+
+---
+
+# 🎲 例題：まずは 1 ルールの WCU
+
+<div class="grid grid-cols-2 gap-4 mt-2 text-xs">
+
+<div>
+
+### 📖 公式表（ルールタイプごとの WCU）
+
+| 要素 | WCU |
+|---|---|
+| `GeoMatchStatement` | **1** |
+| `RegexMatchStatement` (Body) | **3** |
+| `URL_DECODE` transformation | **+10** |
+| `LOWERCASE` transformation | **+10** |
+| `AndStatement` | 子の合計 |
+
+</div>
+
+<div>
+
+### 🧮 rule1 / rule2 の内訳
+
+```text
+GeoMatchStatement            1 WCU
+RegexMatchStatement (Body)   3 WCU
+  └ URL_DECODE              10 WCU
+  └ LOWERCASE               10 WCU
+AndStatement (集約)           -
+─────────────────────────────────
+合計                         24 WCU
+```
+
+→ **rule1 = 24 WCU / rule2 = 24 WCU**  
+→ 2 ルール束ねたら、単純合計 = **48 WCU** ？
+
+</div>
+
+</div>
+
+<div class="mt-2 p-2 bg-cyan-900/30 rounded text-xl text-center">
+
+🤔 結局WCUはいくつ... ？
+
+</div>
+
+---
+
+# 🎲 例題：答え合わせ（最適化）
+
+<div class="grid grid-cols-2 gap-4 mt-2 text-xs">
+
+<div>
+
+### ✨ `check_capacity` で実測すると…
+
+```python
+c.check_capacity(
+    Scope='REGIONAL',
+    Rules=[rule1, rule2]
+)
+# → {'Capacity': 28}
+```
+
+```text
+単純合計  48 WCU  ████████████████
+実測値    28 WCU  █████████
+差分     -20 WCU  ← 最適化分
+```
+
+</div>
+
+<div>
+
+### 💡 なぜ 20 WCU 減るのか
+
+**両ルールが同じ条件を満たしている**：
+- 同じ component（**Body**）を検査
+- 同じ transformation（**URL_DECODE + LOWERCASE**）を適用
+
+→ AWS WAF は **変換処理を 1 回にまとめる**  
+→ 2 ルール分の transformation コスト  
+  `(10 + 10) × 2 = 40` のうち **半分の 20 WCU が削減**
+
+</div>
+
+</div>
+
+<div class="mt-2 p-2 bg-purple-900/30 rounded text-xs">
+
+🔑 同じ component に同じ transformation を当てるルールが増えても WCU はリニアに増えない。<strong>Web ACL 内 / Rule Group 内</strong>のどちらでも最適化される
+
+</div>
+
+---
+
+# 🎲 最適化が効く / 効かないパターン
+
+<div class="text-xs opacity-90">同じ rule1 / rule2 でも <strong>配置の仕方</strong> で最適化の効き方が変わる</div>
+
+<div class="grid grid-cols-3 gap-2 mt-2 text-xs">
+
+<div class="p-2 bg-green-900/30 rounded">
+
+### ✅ パターン A
+**Web ACL に直接 2 ルール**
+
+```text
+┌─ Web ACL ─────────┐
+│  rule1            │
+│  rule2            │
+└───────────────────┘
+```
+
+→ **28 WCU** ✨  
+（最適化が効く）
+
+</div>
+
+<div class="p-2 bg-green-900/30 rounded">
+
+### ✅ パターン B
+**1 つの Rule Group**
+
+```text
+┌─ Web ACL ─────────┐
+│ ┌─ RuleGroup ───┐ │
+│ │  rule1        │ │
+│ │  rule2        │ │
+│ └───────────────┘ │
+└───────────────────┘
+```
+
+| 観点 | WCU |
+|---|---|
+| RG 内（実消費） | **28** ✨ |
+| Web ACL 視点 | RG の **宣言 Capacity 値** |
+
+→ RG 内では最適化が効く（実 WCU が下がる）
+
+</div>
+
+<div class="p-2 bg-red-900/30 rounded">
+
+### ❌ パターン C
+**別々の Rule Group**
+
+```text
+┌─ Web ACL ─────────┐
+│ ┌─ RG-A ────┐     │
+│ │  rule1    │     │
+│ └───────────┘     │
+│ ┌─ RG-B ────┐     │
+│ │  rule2    │     │
+│ └───────────┘     │
+└───────────────────┘
+```
+
+| 観点 | WCU |
+|---|---|
+| RG-A / RG-B 内 | **24** / **24** |
+| Web ACL 視点 | 各 RG の **宣言 Capacity 値の合計** |
+
+→ RG をまたぐと最適化が効かない
+
+</div>
+
+</div>
+
+<div class="mt-2 p-2 bg-purple-900/30 rounded text-xs">
+
+🔑 Web ACL 視点の Rule Group コストは <strong>作成時の宣言 Capacity 値で固定</strong>（実消費 WCU ではない）。最適化されてもされなくても Web ACL の WCU 枠を食うのは宣言値の合計
+
+</div>
 
 ---
 
@@ -518,40 +692,78 @@ print(resp['ManagedKeysIPV6']['Addresses'])
 </div>
 
 ---
-layout: two-cols
----
 
 # まとめ
 
-<div class="text-sm space-y-2">
+<div class="text-lm space-y-2">
 
-1. **SizeRestrictions の隙間** — 本体検査範囲とのズレ＋「個数」を弾くカスタムも書けない
-2. **LockToken の罠** — boto3 で WAF を更新するなら `get` で取って `update` に渡す
-3. **`check_capacity` は試算だけじゃない** — WCU 計算と構文 validation を同時に
-4. **今ブロックされてる IP を覗く** — `get_rate_based_statement_managed_keys`
-
-</div>
-
-<div class="mt-3">
-
-役に立つ日が来るかは知りません 🤷
+1. **8 KB の死角** — サイズは弾けるが、**個数は弾けない**
+2. **LockToken** — boto3 で更新するなら `get` → `update`
+3. **`check_capacity`** — WCUの試算API
+4. **WCU** の話 - テキスト変換のWCU
+5. **`get_rate_based_statement_managed_keys`** — 今ブロック中の IP
 
 </div>
 
-::right::
+<div class="mt-3 text-sm">
 
-<div class="flex flex-col items-center justify-center h-full">
+知らないよりは知っていたほうがいいはず…
 
-```mermaid {scale: 0.7}
-graph TD
-    W[🛡️ AWS WAF] --> M[中級者ガイド<br/>= 電通記事]
-    W --> S[横道<br/>= 今日の話]
-    M --> R[実務で効く 💼]:::ok
-    S --> T[酒の肴になる 🍺]:::ok2
+</div>
 
-    classDef ok fill:#3F8624,stroke:#2E6B1A,color:#fff,stroke-width:2px
-    classDef ok2 fill:#E07941,stroke:#C4622E,color:#fff,stroke-width:2px
-```
+<div class="mt-3 p-2 bg-slate-700/40 rounded text-xs">
+
+📝 話さなかったこと：**WAF ログフォーマットの話** — 細かい話で長くなるのでカット
+
+</div>
+
+
+
+---
+layout: center
+---
+
+# 📢 告知 ① — JAWS SONIC 2026
+
+<div class="flex flex-col items-center gap-4 mt-4">
+
+<img src="/images/sonic.png" class="rounded-lg shadow-2xl max-h-80" />
+
+<div class="text-center">
+
+### JAWS SONIC 2026 / MIDNIGHT JAWS 2026 - THE MARATHON -
+**2026/9/5 (土) 12:00 〜 9/6 (日) 12:00** ／ オンライン開催 🌐  
+24 時間ぶっ通しの JAWS-UG オンラインイベント
+
+<div class="mt-2 text-sm">
+🔗 <a href="https://jaws-ug.connpass.com/event/393837/">jaws-ug.connpass.com/event/393837/</a>
+</div>
+
+</div>
+
+</div>
+
+---
+layout: center
+---
+
+# 📢 告知 ② — JAWS FESTA AKITA 2026
+
+<div class="flex flex-col items-center gap-4 mt-4">
+
+<img src="/images/festa.png" class="rounded-lg shadow-2xl max-h-72" />
+
+<div class="text-center">
+
+### JAWS FESTA AKITA 2026
+**2026/11/7 (土)** ／ あきた芸術劇場ミルハス 🎭  
+秋田さ来てたんせ！ 🌾
+
+<div class="mt-2 text-sm">
+🔗 <a href="https://jawsfesta2026.jaws-ug.jp/">jawsfesta2026.jaws-ug.jp</a>
+</div>
+
+</div>
 
 </div>
 
