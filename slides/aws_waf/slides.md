@@ -21,14 +21,13 @@ layout: two-cols
 # aws sts get-caller-identity
 
 - **仕事**
-    - セキュリティ
     - SOC運用やログ分析基盤を作ってます
 - **趣味**
     - (最近やってないけど)自作スピーカー / 自作キーボード
     - AI/ローカルLLMで遊ぶ（自作Aqua Voice/Google MeetでVTuberするChrome拡張）
 - **LT**
     - 彩の国埼玉支部 2回目(#0、今回)
-    - Slidev ２回目
+    - Slidevでの発表 2回目
     - Security-JAWS CfP落ちの内容を話します
 - **好きなAWSサービス**
   <div class="flex gap-4 mt-2 ml-4">
@@ -246,7 +245,7 @@ WAF 側に「先頭 200 個まで」の **検査上限** があるのに、<br/>
 
 ---
 
-# 🧪 実機検証：**FieldToMatch** × **OversizeHandling**
+# 🧪 **FieldToMatch** × **OversizeHandling**
 
 <div class="text-xs opacity-70 mt-1">CloudFront + WAF で「Header 値に <code>BLOCKME</code> を含めば Block」のルールを構成。ダミー Header の数と marker 位置を変えて curl で検証</div>
 
@@ -534,7 +533,7 @@ AndStatement (集約)           -
 
 ---
 
-# 🎲 例題：答え合わせ（最適化）
+# 🎲 例題：答え合わせ
 
 <div class="grid grid-cols-2 gap-4 mt-2 text-xs">
 
@@ -803,13 +802,13 @@ layout: center
 <div class="flex items-center gap-6">
   <img src="/images/icon.jpg" class="w-32 rounded-lg" />
   <div class="text-left">
-    <p class="text-xl">raiha (Ryo Aihara)</p>
+    <p class="text-xl">raiha</p>
     <p class="opacity-80">𝕏: <strong>@raiha_tec</strong></p>
   </div>
 </div>
 
 <p class="mt-6 text-lg">
-質問・感想は X までお気軽に！
+質問・感想はお気軽にどうぞ！
 </p>
 
 </div>
