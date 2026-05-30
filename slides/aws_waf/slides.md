@@ -246,6 +246,31 @@ WAF 側に「先頭 200 個まで」の **検査上限** があるのに、<br/>
 
 ---
 
+# 🧪 実機検証：**FieldToMatch** × **OversizeHandling**
+
+<div class="text-xs opacity-70 mt-1">CloudFront + WAF で「Header 値に <code>BLOCKME</code> を含めば Block」のルールを構成。ダミー Header の数と marker 位置を変えて curl で検証</div>
+
+<div class="text-sm mt-2">
+
+| 検査方式 | OversizeHandling | marker が範囲内<br>(≤200 個目) | marker が範囲外<br>(≥201 個目) | marker 無し<br>＋ 201 個超 |
+|---|:---:|:---:|:---:|:---:|
+| `SingleHeader`（名前指定） | (n/a) | 🛑 Block | 🛑 Block | ✅ Allow |
+| `Headers` + `IncludedHeaders` | any | 🛑 Block | 🛑 Block | ✅ Allow |
+| `Headers` + `All` | `CONTINUE` <span class="text-xs opacity-60">(既定)</span> | 🛑 Block | <span class="bg-red-500/40 px-1">✅ **Bypass**</span> | ✅ Allow |
+| `Headers` + `All` | `NO_MATCH` | 🛑 Block | <span class="bg-red-500/40 px-1">✅ **Bypass**</span> | ✅ Allow |
+| `Headers` + `All` | `MATCH` | 🛑 Block | 🛑 Block | <span class="bg-amber-500/40 px-1">🛑 **誤検知 Block**</span> |
+
+</div>
+
+<div class="mt-3 text-sm leading-relaxed">
+
+🔑 **名前指定（SingleHeader / IncludedHeaders）は 200 個制限の対象外** — 名前で直接取り出すため位置と無関係<br/>
+🔑 **全件スキャン（Headers / All）のみ 200 個制限が効く** — 既定の `CONTINUE` は **バイパス余地アリ**、`MATCH` はバイパス潰せるが正規 200 個超ユーザを誤検知
+
+</div>
+
+---
+
 # 🛠️ ② boto3 で WAF 更新時の **LockToken**
 
 WAF は **楽観ロック**でリソース管理。`LockToken` を握っていないと更新が拒否される
