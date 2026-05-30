@@ -11,7 +11,7 @@ transition: slide-left
 # あなたが知らなそうな<br/>AWS WAFの話
 
 2026/5/30  
-JAWS-UG 彩の国埼玉支部 #8 彩の国埼玉支部 1周年   
+JAWS-UG 彩の国埼玉支部 #8 彩の国埼玉支部 1周年  
 raiha(Ryo Aihara) / @raiha_tec
 
 ---
@@ -24,29 +24,33 @@ layout: two-cols
     - SOC運用やログ分析基盤を作ってます
 - **趣味**
     - (最近やってないけど)自作スピーカー / 自作キーボード
-    - AI/ローカルLLMで遊ぶ（自作Aqua Voice/Google MeetでVTuberするChrome拡張）
+    - AI/ローカルLLMで遊ぶ
+      - 自作Aqua Voice
+      - Google MeetでVTuberするChrome拡張(右下)
 - **LT**
     - 彩の国埼玉支部 2回目(#0、今回)
     - Slidevでの発表 2回目
     - Security-JAWS CfP落ちの内容を話します
 - **好きなAWSサービス**
-  <div class="flex gap-4 mt-2 ml-4">
-    <div class="flex flex-col items-center">
-      <img src="/images/ecs.svg" class="w-12 h-12" />
-      <span class="text-sm mt-1">ECS</span>
-    </div>
-    <div class="flex flex-col items-center">
-      <img src="/images/cdk.svg" class="w-12 h-12" />
-      <span class="text-sm mt-1">CDK</span>
-    </div>
-  </div>
+  - ECS / CDK
+- **埼玉歴30数年**
 
 ::right::
 
-<div class="flex flex-col items-center justify-center h-full">
-  <img src="/images/icon.jpg" class="w-64 rounded-lg" />
-  <p class="mt-4">𝕏: @raiha_tec</p>
+<div class="flex flex-col items-center justify-center h-full gap-2">
+  <img src="/images/icon.jpg" class="w-32 rounded-lg" />
+  <p class="text-sm">𝕏: @raiha_tec</p>
+  <SlidevVideo autoplay muted controls loop class="w-full rounded-lg">
+    <source src="/720p.mp4" type="video/mp4">
+  </SlidevVideo>
+  <p class="text-sm">かわいい</p>
 </div>
+
+<style>
+.slidev-layout.two-columns {
+  grid-template-columns: 5fr 2fr !important;
+}
+</style>
 
 ---
 
@@ -108,31 +112,6 @@ layout: two-cols
 <div class="mt-3 text-xs opacity-70">
 📖 <a href="https://tech.dentsusoken.com/entry/8_things_i_wanted_to_know_about_aws_waf">電通総研ブログ：AWS WAF について最初から知りたかったこと8選</a>
 </div>
-
----
-
-# AWS WAF おさらい
-
-L7（HTTP）で動くマネージドWAF。CloudFront / ALB / API Gateway 等にアタッチ
-
-<div class="flex justify-center mt-2">
-
-```mermaid {scale: 0.7}
-graph LR
-    U[👤 User]:::user --> CF[☁️ CloudFront / ALB]:::edge
-    CF -->|🛡️ Web ACL で検査| WAF{{🚦 AWS WAF}}:::waf
-    WAF -->|Allow / Block / Count<br/>CAPTCHA / Challenge| ORG[🖥️ Origin / Backend]:::origin
-
-    classDef user fill:#527FFF,stroke:#3B5FCC,color:#fff,stroke-width:2px
-    classDef edge fill:#E07941,stroke:#C4622E,color:#fff,stroke-width:2px
-    classDef waf fill:#DD344C,stroke:#B22A3D,color:#fff,stroke-width:2px
-    classDef origin fill:#3F8624,stroke:#2E6B1A,color:#fff,stroke-width:2px
-```
-
-</div>
-
-- **Web ACL** ＞ **Rule Group**（マネージド or 自前）＞ **Rule** の階層
-- ルールは上から順に評価、ラベル付与は終端でないアクション
 
 ---
 
@@ -488,48 +467,27 @@ print(resp['Capacity'])  # → 5 WCU
 
 # 🎲 例題：まずは 1 ルールの WCU
 
-<div class="grid grid-cols-2 gap-4 mt-2 text-xs">
+<div class="text-xs opacity-90 mt-1">📖 公式表のWCUを使って rule1 / rule2 の WCU を積み上げてみる</div>
 
-<div>
+<div class="mt-2 text-xs">
 
-### 📖 公式表（ルールタイプごとの WCU）
-
-| 要素 | WCU |
-|---|---|
-| `GeoMatchStatement` | **1** |
-| `RegexMatchStatement` (Body) | **3** |
-| `URL_DECODE` transformation | **+10** |
-| `LOWERCASE` transformation | **+10** |
-| `AndStatement` | 子の合計 |
-
-</div>
-
-<div>
-
-### 🧮 rule1 / rule2 の内訳
-
-```text
-GeoMatchStatement            1 WCU
-RegexMatchStatement (Body)   3 WCU
-  └ URL_DECODE              10 WCU
-  └ LOWERCASE               10 WCU
-AndStatement (集約)           -
-─────────────────────────────────
-合計                         24 WCU
-```
-
-→ **rule1 = 24 WCU / rule2 = 24 WCU**  
-→ 2 ルール束ねたら、単純合計 = **48 WCU** ？
+| 構成要素 | 公式表の WCU | 内訳 |
+|---|:---:|---|
+| `GeoMatchStatement` (`JP` or `US`) | **1** | 1 WCU |
+| `RegexMatchStatement` (Body) | **3** | 3 WCU |
+| `URL_DECODE` transformation | **+10** | 10 WCU |
+| `LOWERCASE` transformation | **+10** | 10 WCU |
+| `AndStatement` (集約) | 子の合計 | — |
+| | | **= 24 WCU** |
 
 </div>
 
-</div>
+<div class="mt-3 p-2 bg-slate-700/40 rounded text-sl text-center">
 
-<div class="mt-2 p-2 bg-cyan-900/30 rounded text-xl text-center">
-
-🤔 結局WCUはいくつ... ？
+→ <strong>rule1 = 24 WCU / rule2 = 24 WCU</strong>　…なので 2 ルールの合計は？
 
 </div>
+
 
 ---
 
@@ -797,18 +755,27 @@ layout: center
 
 # ご清聴ありがとうございました 🙏
 
-<div class="flex flex-col items-center gap-4 mt-8">
+<div class="flex flex-col items-center gap-4 mt-2">
 
-<div class="flex items-center gap-6">
-  <img src="/images/icon.jpg" class="w-32 rounded-lg" />
+<p class="text-2xl font-bold text-center leading-normal py-1">
+💬 質問・感想はお気軽にどうぞ！
+</p>
+
+<div class="flex items-center gap-4 mt-1">
+  <img src="/images/icon.jpg" class="w-16 rounded-lg" />
   <div class="text-left">
     <p class="text-xl">raiha</p>
-    <p class="opacity-80">𝕏: <strong>@raiha_tec</strong></p>
+    <p class="opacity-80 text-xl">𝕏: <strong>@raiha_tec</strong></p>
   </div>
 </div>
 
-<p class="mt-6 text-lg">
-質問・感想はお気軽にどうぞ！
-</p>
+<div class="text-center py-3">
+  <p class="text-3xl font-extrabold bg-gradient-to-r from-pink-400 via-yellow-300 to-cyan-300 bg-clip-text text-transparent drop-shadow-lg leading-normal py-1">
+    🎉🎊 彩の国埼玉支部 🎊🎉
+  </p>
+  <p class="text-4xl font-extrabold bg-gradient-to-r from-pink-400 via-yellow-300 to-cyan-300 bg-clip-text text-transparent drop-shadow-lg leading-normal py-2 mt-1">
+    1周年おめでとうございます！！ 🎂✨
+  </p>
+</div>
 
 </div>
