@@ -30,7 +30,7 @@ layout: two-cols
 - **LT**
     - 彩の国埼玉支部 2回目(#0、今回)
     - Slidevでの発表 2回目
-    - Security-JAWS CfP落ちの内容を話します
+    - Security-JAWS CfP落ちの抜粋
 - **好きなAWSサービス**
   - ECS / CDK
 - **埼玉歴30数年**
@@ -139,6 +139,16 @@ CRS Block 閾値      ────────┃ > 8,192 B で Block ※Count �
 
 <div class="grid grid-cols-2 gap-3 mt-2 text-sm">
 
+<div class="p-2 bg-red-900/30 rounded">
+
+### ⚠️ CommonRuleSetの誤った理解
+`SizeRestrictions_BODY` は **> 8,192 B で Block**  
+→ 単に大きいリクエストを拒否するルールと考えると…  
+→ **Count にする**と「8KB以降のBody部が検査されない」  
+= 攻撃されやすい・気づきづらい
+
+</div>
+
 <div class="p-2 bg-purple-900/30 rounded">
 
 ### 📏 WAF 仕様上限（Body）
@@ -147,15 +157,7 @@ CRS Block 閾値      ────────┃ > 8,192 B で Block ※Count �
 
 Body部のうち、先頭8~64KBまでをAWS WAFは検査する
 
-</div>
-
-<div class="p-2 bg-red-900/30 rounded">
-
-### ⚠️ CommonRuleSetの誤った理解
-`SizeRestrictions_BODY` は **> 8,192 B で Block**  
-→ 単に大きいリクエストを拒否するルールと考えると…  
-→ **Count にする**と「8KB以降のBody部が検査されない」  
-= 攻撃されやすい・気づきづらい
+💡 **AWSマネージドルールには、そもそも16KB以上を Block するルールが存在しない**
 
 </div>
 
@@ -414,7 +416,7 @@ print(resp['Capacity'])  # → 5 WCU
 
 <div>
 
-### rule1 — JP × `.*/test/.*`
+### rule1 — **JP** × `.*/test/.*`
 
 ```json
 {
@@ -436,7 +438,7 @@ print(resp['Capacity'])  # → 5 WCU
 
 <div>
 
-### rule2 — US × `.*/example/.*`
+### rule2 — **US** × `.*/example/.*`
 
 ```json
 {
@@ -698,7 +700,6 @@ print(resp['ManagedKeysIPV6']['Addresses'])
 📝 話さなかったこと：**WAF ログフォーマットの話** — 細かい話で長くなるのでカット
 
 </div>
-
 
 
 ---
