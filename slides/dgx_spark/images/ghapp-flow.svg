@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 470" width="1160" height="470" font-family="'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif">
+  <defs>
+    <marker id="fw" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="11" refX="12" refY="5.5" orient="auto"><path d="M0,0 L13,5.5 L0,11 z" fill="#e5e7eb"/></marker>
+    <marker id="fg" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="11" refX="12" refY="5.5" orient="auto"><path d="M0,0 L13,5.5 L0,11 z" fill="#4ade80"/></marker>
+  </defs>
+
+  <rect x="30" y="46" width="250" height="62" rx="8" fill="#374151" stroke="#9ca3af" stroke-width="2"/>
+  <text x="155" y="72" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="middle">GitHub App</text>
+  <text x="155" y="93" fill="#d1d5db" font-size="12" text-anchor="middle">hermes-worker</text>
+
+  <rect x="320" y="46" width="200" height="62" rx="8" fill="#92400e" stroke="#fbbf24" stroke-width="2"/>
+  <text x="420" y="83" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="middle">Cloudflare Tunnel</text>
+
+  <rect x="560" y="46" width="250" height="62" rx="8" fill="#164e63" stroke="#67e8f9" stroke-width="2"/>
+  <text x="685" y="72" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="middle">webhook 受付</text>
+  <text x="685" y="93" fill="#a5f3fc" font-size="12" text-anchor="middle">正規の通知だけ通す</text>
+
+  <rect x="850" y="46" width="250" height="62" rx="8" fill="#3b0764" stroke="#c4b5fd" stroke-width="2"/>
+  <text x="975" y="72" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="middle">レビュー実行</text>
+  <text x="975" y="93" fill="#ddd6fe" font-size="12" text-anchor="middle">ローカル LLM で生成</text>
+
+  <line x1="282" y1="77" x2="316" y2="77" stroke="#e5e7eb" stroke-width="2.5" marker-end="url(#fw)"/>
+  <line x1="522" y1="77" x2="556" y2="77" stroke="#e5e7eb" stroke-width="2.5" marker-end="url(#fw)"/>
+  <line x1="812" y1="77" x2="846" y2="77" stroke="#4ade80" stroke-width="3" marker-end="url(#fg)"/>
+  <text x="829" y="132" fill="#4ade80" font-size="11" text-anchor="middle">通過分だけ</text>
+
+  <rect x="30" y="145" width="250" height="150" rx="8" fill="#1f2937" stroke="#4b5563" stroke-width="1.5"/>
+  <text x="46" y="172" fill="#cbd5e1" font-size="11.5">・インストール画面のチェックが</text>
+  <text x="56" y="190" fill="#cbd5e1" font-size="11.5">対応リポジトリの唯一の制御点</text>
+  <text x="46" y="216" fill="#cbd5e1" font-size="11.5">・App レベル webhook なので</text>
+  <text x="56" y="234" fill="#cbd5e1" font-size="11.5">1 URL で全インストール先を網羅</text>
+  <text x="46" y="260" fill="#cbd5e1" font-size="11.5">・PR と issue コメントの</text>
+  <text x="56" y="278" fill="#cbd5e1" font-size="11.5">イベントが届く</text>
+
+  <rect x="320" y="145" width="200" height="150" rx="8" fill="#1f2937" stroke="#4b5563" stroke-width="1.5"/>
+  <text x="336" y="172" fill="#cbd5e1" font-size="11.5">・ポート開放ゼロで</text>
+  <text x="346" y="190" fill="#cbd5e1" font-size="11.5">自宅まで届く</text>
+  <text x="336" y="216" fill="#cbd5e1" font-size="11.5">・ドメインと証明書は</text>
+  <text x="346" y="234" fill="#cbd5e1" font-size="11.5">Cloudflare に任せる</text>
+
+  <rect x="560" y="145" width="250" height="150" rx="8" fill="#1f2937" stroke="#4b5563" stroke-width="1.5"/>
+  <text x="576" y="172" fill="#cbd5e1" font-size="11.5">・署名を検証して</text>
+  <text x="586" y="190" fill="#cbd5e1" font-size="11.5">正規の webhook だけ通す</text>
+  <text x="576" y="216" fill="#cbd5e1" font-size="11.5">・受け付けたら PR に</text>
+  <text x="586" y="234" fill="#cbd5e1" font-size="11.5">リアクションを即付与</text>
+  <text x="576" y="260" fill="#cbd5e1" font-size="11.5">・対象外（draft など）は見送る</text>
+
+  <rect x="850" y="145" width="250" height="150" rx="8" fill="#1f2937" stroke="#4b5563" stroke-width="1.5"/>
+  <text x="866" y="172" fill="#cbd5e1" font-size="11.5">・当該 PR の差分と会話を集めて</text>
+  <text x="876" y="190" fill="#cbd5e1" font-size="11.5">ローカル LLM（Qwen）に渡す</text>
+  <text x="866" y="216" fill="#cbd5e1" font-size="11.5">・追加指示（/hermes 直して等）</text>
+  <text x="876" y="234" fill="#cbd5e1" font-size="11.5">にも従う</text>
+  <text x="866" y="260" fill="#cbd5e1" font-size="11.5">・結果は bot 名義でコメント投稿</text>
+
+  <rect x="30" y="325" width="1070" height="58" rx="8" fill="#064e3b" stroke="#4ade80" stroke-width="2"/>
+  <text x="52" y="360" fill="#ffffff" font-size="14" font-weight="bold">実測</text>
+  <text x="112" y="360" fill="#d1fae5" font-size="14">/hermes とコメント</text>
+  <line x1="262" y1="355" x2="322" y2="355" stroke="#4ade80" stroke-width="2.5" marker-end="url(#fg)"/>
+  <text x="292" y="345" fill="#4ade80" font-size="12" font-weight="bold" text-anchor="middle">4秒</text>
+  <text x="336" y="360" fill="#d1fae5" font-size="14">リアクションが付く</text>
+  <line x1="488" y1="355" x2="568" y2="355" stroke="#4ade80" stroke-width="2.5" marker-end="url(#fg)"/>
+  <text x="528" y="345" fill="#4ade80" font-size="12" font-weight="bold" text-anchor="middle">1分49秒</text>
+  <text x="582" y="360" fill="#d1fae5" font-size="14">レビュー投稿（bot 名義）</text>
+  <text x="800" y="360" fill="#9ca3af" font-size="12">｜ 取りこぼしは毎時の systemd timer が拾う</text>
+
+  <text x="30" y="418" fill="#9ca3af" font-size="12.5">リポジトリを増やす手順は2つだけ（① インストール画面でチェックを入れる ② レビュー基準の REVIEW.md を置く。無ければ汎用基準）</text>
+  <text x="30" y="442" fill="#9ca3af" font-size="12.5">webhook の配線も、認可も、巡回のフォールバックも、すべて自動で追従する</text>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 310" width="1160" height="310" font-family="'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif">
+  <defs>
+    <marker id="kR" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#4ade80"/></marker>
+  </defs>
+
+  <text x="30" y="30" fill="#e5e7eb" font-size="15" font-weight="bold">GB10 は CPU と GPU でメモリ 121GB を共有する。LLM と同居させるので、CI は空きに収める</text>
+
+  <text x="30" y="88" fill="#ffffff" font-size="15" font-weight="bold">gx10-1</text>
+  <rect x="150" y="60" width="458" height="52" fill="#6d28d9" stroke="#c4b5fd" stroke-width="1.5"/>
+  <text x="379" y="92" fill="#ffffff" font-size="13.5" font-weight="bold" text-anchor="middle">vLLM Qwen3.6-35B　61.5 GB</text>
+  <rect x="608" y="60" width="171" height="52" fill="#a21caf" stroke="#f0abfc" stroke-width="1.5"/>
+  <text x="693" y="92" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">Fable-Fusion　23 GB</text>
+  <rect x="779" y="60" width="71" height="52" fill="#475569" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="814" y="92" fill="#e5e7eb" font-size="11" text-anchor="middle">音声ほか</text>
+  <rect x="850" y="60" width="200" height="52" fill="#064e3b" stroke="#4ade80" stroke-width="2.5"/>
+  <text x="950" y="92" fill="#a7f3d0" font-size="13.5" font-weight="bold" text-anchor="middle">空き 27 GB</text>
+
+  <path d="M950,150 L950,118" fill="none" stroke="#4ade80" stroke-width="3" marker-end="url(#kR)"/>
+  <text x="950" y="143" fill="#4ade80" font-size="13.5" font-weight="bold" text-anchor="middle">CI はここに入る</text>
+
+  <text x="30" y="198" fill="#ffffff" font-size="15" font-weight="bold">gx10-2</text>
+  <rect x="150" y="170" width="795" height="52" fill="#0e7490" stroke="#67e8f9" stroke-width="1.5"/>
+  <text x="547" y="202" fill="#ffffff" font-size="13.5" font-weight="bold" text-anchor="middle">vLLM Laguna S 2.1　106.8 GB</text>
+  <rect x="945" y="170" width="105" height="52" fill="#475569" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="997" y="202" fill="#e5e7eb" font-size="11.5" text-anchor="middle">そのほか</text>
+
+  <text x="30" y="262" fill="#9ca3af" font-size="12.5">コンテナは <tspan fill="#e5e7eb">--cpus=8 --memory=24g</tspan> で制限する。<tspan fill="#e5e7eb">--memory-swap</tspan> も同値にして swap を使わせない（暴走してもホストを巻き込まず、コンテナ内で止まる）</text>
+  <text x="30" y="289" fill="#9ca3af" font-size="12.5">実測：ジョブ実行中のコンテナは CPU 50%（上限 800%）/ MEM 335 MiB。音声入力スタックと vLLM は無影響だった</text>
+</svg>

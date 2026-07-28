@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 420" width="1160" height="420" font-family="'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif">
+  <defs>
+    <marker id="cahW" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 z" fill="#e5e7eb"/></marker>
+    <marker id="cahR" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="12" refX="13" refY="6" orient="auto"><path d="M0,0 L14,6 L0,12 z" fill="#f87171"/></marker>
+    <marker id="cahI" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="11" refX="12" refY="5.5" orient="auto"><path d="M0,0 L13,5.5 L0,11 z" fill="#a5b4fc"/></marker>
+    <marker id="cahIs" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="11" refX="1" refY="5.5" orient="auto"><path d="M13,0 L0,5.5 L13,11 z" fill="#a5b4fc"/></marker>
+  </defs>
+
+  <!-- 利用者 -->
+  <rect x="30" y="160" width="170" height="64" rx="8" fill="#374151" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="115" y="198" fill="#ffffff" font-size="15" text-anchor="middle">スマホ / PC</text>
+
+  <!-- Cloudflare Access -->
+  <rect x="320" y="140" width="290" height="104" rx="8" fill="#92400e" stroke="#fbbf24" stroke-width="2"/>
+  <text x="465" y="180" fill="#ffffff" font-size="17" font-weight="bold" text-anchor="middle">Cloudflare Access</text>
+  <text x="465" y="206" fill="#fde68a" font-size="13" text-anchor="middle">サービスごとのサブドメインが入口</text>
+  <text x="465" y="228" fill="#e5e7eb" font-size="12" text-anchor="middle">入口で全リクエストを認証</text>
+
+  <!-- AWS IAM Identity Center -->
+  <rect x="320" y="320" width="290" height="74" rx="8" fill="#7c2d12" stroke="#fb923c" stroke-width="2"/>
+  <text x="465" y="350" fill="#ffffff" font-size="15" font-weight="bold" text-anchor="middle">AWS IAM Identity Center</text>
+  <text x="465" y="374" fill="#fdba74" font-size="12" text-anchor="middle">いつもの SSO アカウント</text>
+
+  <!-- gx10-2 -->
+  <rect x="740" y="40" width="390" height="228" rx="10" fill="#083344" stroke="#67e8f9" stroke-width="2"/>
+  <text x="756" y="66" fill="#ffffff" font-size="15" font-weight="bold">gx10-2</text>
+
+  <rect x="765" y="80" width="340" height="52" rx="6" fill="#1f2937" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="935" y="101" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">チャットUI</text>
+  <text x="935" y="121" fill="#cbd5e1" font-size="11.5" text-anchor="middle">Open WebUI</text>
+
+  <rect x="765" y="142" width="340" height="52" rx="6" fill="#1f2937" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="935" y="163" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">マシンメトリクス</text>
+  <text x="935" y="183" fill="#cbd5e1" font-size="11.5" text-anchor="middle">Beszel</text>
+
+  <rect x="765" y="204" width="340" height="52" rx="6" fill="#1f2937" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="935" y="225" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">死活監視</text>
+  <text x="935" y="245" fill="#cbd5e1" font-size="11.5" text-anchor="middle">Gatus</text>
+
+  <!-- gx10-1 -->
+  <rect x="740" y="284" width="390" height="112" rx="10" fill="#3b0764" stroke="#c4b5fd" stroke-width="2"/>
+  <text x="756" y="310" fill="#ffffff" font-size="15" font-weight="bold">gx10-1</text>
+
+  <rect x="765" y="324" width="340" height="52" rx="6" fill="#1f2937" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="935" y="345" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">コーディングエージェント</text>
+  <text x="935" y="365" fill="#ddd6fe" font-size="11.5" text-anchor="middle">OpenCode の Web UI</text>
+
+  <!-- ① アクセス -->
+  <line x1="200" y1="192" x2="316" y2="192" stroke="#e5e7eb" stroke-width="2" marker-end="url(#cahW)"/>
+  <text x="258" y="178" fill="#e5e7eb" font-size="13" text-anchor="middle">① アクセス</text>
+
+  <!-- ② SAML ログイン -->
+  <line x1="465" y1="248" x2="465" y2="316" stroke="#a5b4fc" stroke-width="2.5" stroke-dasharray="7 5" marker-start="url(#cahIs)" marker-end="url(#cahI)"/>
+  <text x="485" y="288" fill="#a5b4fc" font-size="13" font-weight="bold">② SAML でログイン</text>
+
+  <!-- ③ 認証済みだけ中へ -->
+  <line x1="610" y1="168" x2="676" y2="168" stroke="#f87171" stroke-width="4"/>
+  <line x1="676" y1="168" x2="736" y2="168" stroke="#f87171" stroke-width="4" marker-end="url(#cahR)"/>
+  <path d="M676,168 L676,340 L736,340" fill="none" stroke="#f87171" stroke-width="4" marker-end="url(#cahR)"/>
+  <circle cx="676" cy="168" r="5" fill="#f87171"/>
+  <text x="643" y="148" fill="#f87171" font-size="13" font-weight="bold" text-anchor="middle">③ 認証済みだけ</text>
+  <text x="643" y="192" fill="#f87171" font-size="12" text-anchor="middle">Tunnel 経由</text>
+</svg>
