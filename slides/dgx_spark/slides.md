@@ -556,3 +556,32 @@ Claude Code に「評価して下さい。」と言っただけの一発評価�
   padding: 0.3rem 0.8rem !important;
 }
 </style>
+
+---
+
+# 後日談：発表後に構成を変えました
+
+<div class="text-sm mt-4">
+
+| | 発表時 | 現在 |
+|---|---|---|
+| **gx10-1**（DGX Spark） | Qwen3.6-35B ＋ Fable-Fusion 27B | **DeepSeek-V4-Flash-0731**（2台にまたがって1モデル） |
+| **gx10-2**（DGX Spark） | Laguna S 2.1 | 同上 |
+| **デスクトップPC** | — | **Fable-Fusion 27B**（Qwen3.6 27B ベース） |
+
+</div>
+
+<div class="mt-6 p-3 bg-slate-700/40 rounded text-center text-sm">
+
+**DGX Spark はでかいモデル専用機、日常使いはデスクトップPC という住み分けにいったんしてみる**
+
+DeepSeek V4 Flashが思ったよりtok/sが早かった
+
+
+</div>
+
+<style>
+.slidev-layout td, .slidev-layout th {
+  padding: 0.3rem 0.8rem !important;
+}
+</style>
